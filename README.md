@@ -1,7 +1,8 @@
-# כתיבה אקדמית בעברית תקנית — סקיל
+# הגהה לשונית וכתיבה אקדמית בעברית — סקיל
 
-סקיל אחד לכתיבה, לעריכה ולהגהה של טקסטים אקדמיים בעברית, בכל תחום דעת,
-ובתוכו מנוע הגהה מקומי לפי כללי **האקדמיה ללשון העברית**.
+סקיל אחד לשני דברים: **הגהה ועריכה לשונית** של כל טקסט בעברית לפי כללי
+**האקדמיה ללשון העברית**, ו**כתיבה אקדמית** בעברית תקנית בכל תחום דעת.
+מנוע ההגהה עצמו נמצא בתוך הסקיל.
 
 **הכול רץ מקומית.** אין מפתחות API, אין שירות בתשלום ואין שליחת הטקסט שלך
 לשירות חיצוני בזמן ההגהה. המנוע הוא כללים ומורפולוגיה, ולכן אותו טקסט מחזיר
@@ -14,16 +15,17 @@
 אין בנייה ואין `npm install`. מעתיקים את התיקייה אל תיקיית הסקילים:
 
 ```bash
-git clone https://github.com/mckova/hebrew-academic-writing.git ~/.claude/skills/hebrew-academic-writing
+git clone https://github.com/mckova/hebrew-proofreading-academic-writing.git ~/.claude/skills/hebrew-proofreading-academic-writing
 ```
 
 ב-Windows (PowerShell):
 
 ```powershell
-git clone https://github.com/mckova/hebrew-academic-writing.git "$env:USERPROFILE\.claude\skills\hebrew-academic-writing"
+git clone https://github.com/mckova/hebrew-proofreading-academic-writing.git "$env:USERPROFILE\.claude\skills\hebrew-proofreading-academic-writing"
 ```
 
-לפרויקט אחד בלבד, במקום לכל המשתמש: `<הפרויקט>/.claude/skills/hebrew-academic-writing`.
+לפרויקט אחד בלבד, במקום לכל המשתמש:
+`<הפרויקט>/.claude/skills/hebrew-proofreading-academic-writing`.
 
 ### מה נדרש
 
@@ -37,23 +39,17 @@ git clone https://github.com/mckova/hebrew-academic-writing.git "$env:USERPROFIL
 ## מה יש בפנים
 
 ```
-SKILL.md              ההוראות עצמן: סדר העבודה, כללי הברזל, טבלת הכלים
+SKILL.md              ההוראות: הגהה, כתיבה, כללי הברזל, טבלות הכלים
 references/           13 קובצי ידע: סגנון, מבנה, טיעון, מילות קישור, פיסוק,
                       מבנה המשפט, ניבים, לשון תקנית, הפניות, ניקוד, מקרא
 scripts/heb_api.py    שירותים חינמיים: ניבים, החלטות האקדמיה, ניקוד, פסוקים
 engine/               מנוע ההגהה: 85 כללים, מורפולוגיה, לקסיקונים
 ```
 
-### הידע
-
-רישום לשוני ומבנה טיעון, מילות קישור על פני עשרים קטגוריות, פיסוק, מבנה
-המשפט והסמיכות, ניבים ומטבעות לשון, לשון תקנית, שיטות הפניה וביבליוגרפיה,
-ניקוד — ופרק נפרד לכתיבה במדעי היהדות ובחקר המקרא.
-
-### המנוע
+## הגהה
 
 ```bash
-cd ~/.claude/skills/hebrew-academic-writing
+cd ~/.claude/skills/hebrew-proofreading-academic-writing
 node engine/dist/cli.js --register academic --file עבודה.txt
 ```
 
@@ -72,6 +68,9 @@ node engine/dist/cli.js --register academic --file עבודה.txt
 | מספרים ותאריכים | שם המספר לפי מין שם העצם, שנים עבריות |
 | מרשם וסגנון | אורך משפט, חזרות, שרשראות ״של״, קלישאות, מקצב |
 
+`--register academic` מפעיל 85 כללים; `--register neutral` מפעיל 74, והוא
+המרשם לטקסט שאינו אקדמי. `--fix` מחזיר את הטקסט המתוקן.
+
 ועוד: נטיית פועל בשבעת הבניינים, ניתוח צורה (שורש, בניין, גזרה, זמן, גוף),
 סיווג שווא נע ונח, ניקוד אותיות השימוש, ומילות קישור לפי תפקיד.
 
@@ -87,6 +86,12 @@ node engine/dist/cli.js --register academic --file עבודה.txt
 
 התאם המין נשען על לקסיקון של מין שם העצם ולא על הסיומת בלבד: ״שלושה שולחנות״
 ו״שלוש נשים״ נכונים ואינם מתוקנים, אף ששניהם נראים הפוכים מסיומתם.
+
+## כתיבה אקדמית
+
+הידע שבסקיל: רישום לשוני ומבנה טיעון, מילות קישור על פני עשרים קטגוריות,
+פיסוק, מבנה המשפט והסמיכות, ניבים ומטבעות לשון, לשון תקנית, שיטות הפניה
+וביבליוגרפיה, ניקוד — ופרק נפרד לכתיבה במדעי היהדות ובחקר המקרא.
 
 ---
 
@@ -132,7 +137,7 @@ cd engine && npm install && npm run build
   "mcpServers": {
     "hebrew-editor": {
       "command": "node",
-      "args": ["<נתיב מלא>/hebrew-academic-writing/engine/dist/index.js"]
+      "args": ["<נתיב מלא>/hebrew-proofreading-academic-writing/engine/dist/index.js"]
     }
   }
 }
