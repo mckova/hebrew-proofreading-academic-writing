@@ -39,6 +39,16 @@ function countWords(segment: string): number {
   return segment.trim().split(/\s+/).filter(Boolean).length;
 }
 
+/*
+ * מזהה פסיק שבא לפני ו״ו החיבור של האיבר האחרון ברשימה.
+ *
+ * הגבול: רשימה של שני איברים אינה מזוהה כאן, ובכוונה. ״X, וY״ נראה זהה
+ * ברשימה ובמשפט מאוחה, וההכרעה היא אם בכל אחד משני האיברים יש נושא ונשוא.
+ * נמדד: הנתח המורפולוגי אינו מספק לכך — ״מסווג״ ו״מדווח״ אינם מזוהים
+ * כפועל, ולעומתם ״תקנית״ ו״לשונית״ כן (ת+קנית נראה כעתיד), ולכן כל משפט
+ * שמני נראה כאילו יש בו נשוא. כלל שהיה מסתמך על זה היה מסמן משפטים
+ * מאוחים תקינים. ההכרעה הועברה אל SKILL.md כבדיקה שאינה אוטומטית.
+ */
 function isListFinalVav(text: string, commaIndex: number): boolean {
   const sentenceStart =
     Math.max(-1, ...CLAUSE_BREAKS.map((ch) => text.lastIndexOf(ch, commaIndex - 1))) + 1;
