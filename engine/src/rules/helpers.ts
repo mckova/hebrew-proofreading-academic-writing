@@ -178,9 +178,14 @@ function endsWithAttachedAffix(term: string): boolean {
 /** האם המילה שקדמה למיקום היא word */
 function precededByWord(text: string, start: number, word: string): boolean {
   const before = text.slice(0, start).trimEnd();
-  if (!before.endsWith(word)) return false;
-  const charBefore = before[before.length - word.length - 1];
-  return charBefore === undefined || !HEBREW_LETTER.test(charBefore);
+  // גם «בכתיב מלא» ו«הכתיב ... מלא»: אות שימוש על המילה הקודמת אינה משנה
+  for (const prefix of ['', 'ו', 'ב', 'כ', 'ל', 'מ', 'ש', 'ה', 'וה', 'בה', 'לה', 'מה']) {
+    const target = prefix + word;
+    if (!before.endsWith(target)) continue;
+    const charBefore = before[before.length - target.length - 1];
+    if (charBefore === undefined || !HEBREW_LETTER.test(charBefore)) return true;
+  }
+  return false;
 }
 
 /**
@@ -211,6 +216,11 @@ export interface TermRuleSpec {
  * כדי לעבור על הטקסט פעם אחת במקום פעם לכל מונח.
  */
 export function termRule(spec: TermRuleSpec): Rule {
+  /*
+   * ערך שבו הצורה הנמנעת זהה למומלצת מפיק הודעה חסרת פשר — ״במקום «ככל
+   * הנראה» עדיף «ככל הנראה»״ — ולכן הוא נופל כאן ואינו נעשה כלל.
+   */
+  spec = { ...spec, entries: spec.entries.filter((e) => e.avoid !== e.prefer) };
   const byMatch = new Map<string, TermEntry>();
   for (const e of spec.entries) byMatch.set(e.avoid, e);
 

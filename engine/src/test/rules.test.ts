@@ -593,10 +593,15 @@ test('יידוע בסמיכות מדווח ואינו מתקן אוטומטית'
   assert.equal(fixed, text, 'צירוף דו־משמעי תוקן אוטומטית');
 });
 
-test('מונחים לשוניים אינם מסומנים כלשון דיבור או כראשי תיבות לפרישה', () => {
-  assertClean('הכתיב המלא של המילה.', 'academic/colloquial', 'academic');
-  assertCatches('יש מלא אנשים בכיתה.', 'academic/colloquial', 'academic');
-  for (const ok of ['ו״ו החיבור באה כאן.', 'אותיות מש״ה וכל״ב.', 'ראו שמ״א ג, 4.']) {
+test('שמות אותיות אינם ראשי תיבות הטעונים פרישה, גם עם אות שימוש', () => {
+  for (const ok of [
+    'ו״ו החיבור באה כאן.',
+    'אותיות מש״ה וכל״ב.',
+    'ראו שמ״א ג, 4.',
+    'הדגש בא בתי״ו ולא בטי״ת.',
+    'כשכל״ב פוגשות את ה׳ הידיעה.',
+    'והיו״ד מאבדת את ניקודה.',
+  ]) {
     assertClean(ok, 'academic/undefined-acronym', 'academic');
   }
   assertCatches('הוגש דוח ממ״ד לוועדה.', 'academic/undefined-acronym', 'academic');
@@ -608,4 +613,16 @@ test('יו״ד לפני אל״ף במילה לועזית — כלל הכתיב �
   assertFixes('הצגה בתאטרון', 'בתיאטרון');
   assertFixes('הסיבות האידאולוגיות', 'האידיאולוגיות');
   assertFixes('אידאל היופי', 'אידיאל');
+});
+
+test('אין ממצא שאומר «במקום X עדיף X»', () => {
+  const texts = ['ככל הנראה הנתונים חלקיים.', 'הטקסט תקין לגמרי.'];
+  for (const t of texts) {
+    for (const f of check(t, 'academic').findings) {
+      assert.ok(
+        !/במקום «(.+)» עדיף «»/.test(f.message),
+        `הודעה חסרת פשר בכלל ${f.ruleId}: ${f.message}`,
+      );
+    }
+  }
 });

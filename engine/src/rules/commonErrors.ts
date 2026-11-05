@@ -94,7 +94,6 @@ const FORM_ERRORS: TermEntry[] = [
   { avoid: 'הכל', prefer: 'הכול', note: 'האקדמיה קבעה ״הכול״ בכתיב חסר הניקוד' },
   { avoid: 'בסך הכל', prefer: 'בסך הכול' },
   { avoid: 'סך הכל', prefer: 'סך הכול' },
-  { avoid: 'ככל הנראה', prefer: 'ככל הנראה', severity: 'style', manual: true },
   { avoid: 'כל שהוא', prefer: 'כלשהו', note: 'נכתב כמילה אחת' },
   { avoid: 'כל שהיא', prefer: 'כלשהי', note: 'נכתב כמילה אחת' },
   { avoid: 'כל שהם', prefer: 'כלשהם' },
