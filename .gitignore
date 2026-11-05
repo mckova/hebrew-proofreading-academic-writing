@@ -12,3 +12,9 @@ __pycache__/
 # התאמות אישיות של המשתמש
 profile.md
 hebrew-editor.config.json
+
+# פלט בנייה שאינו נדרש בזמן ריצה — dist/*.js כן נשמר בריפו
+engine/dist/**/*.d.ts
+engine/dist/*.d.ts
+engine/dist/**/*.map
+engine/dist/*.map
