@@ -512,4 +512,11 @@ test('מונחים לשוניים אינם מסומנים כלשון דיבור 
     }
     assertCatches('הוגש דוח ממ״ד לוועדה.', 'academic/undefined-acronym', 'academic');
 });
+test('יו״ד לפני אל״ף במילה לועזית — כלל הכתיב המלא בתנועת e', () => {
+    assertFixes('המסגרת התאורטית', 'התיאורטית');
+    assertFixes('תאוריה חדשה', 'תיאוריה');
+    assertFixes('הצגה בתאטרון', 'בתיאטרון');
+    assertFixes('הסיבות האידאולוגיות', 'האידיאולוגיות');
+    assertFixes('אידאל היופי', 'אידיאל');
+});
 //# sourceMappingURL=rules.test.js.map
