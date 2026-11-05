@@ -17,7 +17,7 @@ const COLLOQUIAL = [
     { avoid: 'בטח', prefer: 'ודאי / מן הסתם', manual: true },
     { avoid: 'סתם', prefer: 'ללא סיבה / שלא לצורך', manual: true },
     { avoid: 'המון', prefer: 'רבים / הרבה', manual: true },
-    { avoid: 'מלא', prefer: 'רבים', manual: true },
+    { avoid: 'מלא', prefer: 'רבים', manual: true, okAfter: 'כתיב' },
     { avoid: 'קצת', prefer: 'במידת מה / מעט', manual: true },
     { avoid: 'סוג של', prefer: 'מעין', manual: true },
     { avoid: 'ברמה של', prefer: 'במידה של / מבחינת', manual: true },
@@ -167,6 +167,20 @@ function undefinedAcronymRule() {
         `ק${GERSHAYIM}מ`, `ס${GERSHAYIM}מ`, `מ${GERSHAYIM}ר`, `כ${GERSHAYIM}א`,
         `וכו${GERSHAYIM}`, `רו${GERSHAYIM}ח`, `יו${GERSHAYIM}ר`,
     ]);
+    /*
+     * שמות אותיות (ו״ו, יו״ד), נוטריקונים של קבוצות אותיות (מש״ה, וכל״ב,
+     * בג״ד כפ״ת) וקיצורי ספרי מקרא וחז״ל אינם ראשי תיבות שיש לפרוש:
+     * בכתיבה לשונית ובמדעי היהדות הם המונח עצמו.
+     */
+    const withGershayim = (w) => w.slice(0, -1) + GERSHAYIM + w.slice(-1);
+    const DOMAIN_TERMS = new Set([
+        'וו', 'יוד', 'הא', 'אלף', 'בית', 'גימל', 'דלת', 'זין', 'חית', 'טית',
+        'כף', 'למד', 'מם', 'נון', 'סמך', 'עין', 'פא', 'צדי', 'קוף', 'ריש',
+        'שין', 'תיו',
+        'משה', 'וכלב', 'בגד', 'כפת', 'בומפ', 'אהחע', 'ארע', 'חעה', 'בכפ',
+        'גדת', 'הח', 'אב',
+        'שמא', 'שמב', 'מלא', 'מלב', 'דהא', 'דהב', 'חזל', 'רשי', 'שות',
+    ].map(withGershayim));
     return {
         ...spec,
         title: 'ראשי תיבות שלא נפרשו',
@@ -178,7 +192,7 @@ function undefinedAcronymRule() {
             let m;
             while ((m = acronym.exec(ctx.text)) !== null) {
                 const form = m[1];
-                if (WELL_KNOWN.has(form) || seen.has(form))
+                if (WELL_KNOWN.has(form) || DOMAIN_TERMS.has(form) || seen.has(form))
                     continue;
                 seen.add(form);
                 // פרישה מקובלת: סוגריים מיד אחרי ראשי התיבות, או ראשי התיבות בסוגריים אחרי הפרישה

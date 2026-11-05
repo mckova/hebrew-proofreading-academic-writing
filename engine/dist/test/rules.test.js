@@ -417,4 +417,99 @@ test('טקסט תקין אינו מייצר שגיאות', () => {
     const errors = check(clean).findings.filter((f) => f.severity === 'error');
     assert.deepEqual(errors.map((f) => f.ruleId), [], 'נמצאו שגיאות בטקסט תקין');
 });
+// ── תחיליות, הקשר ואות שימוש דבוקה ──────────────────────────────────────────
+test('צורה עם תחילית ו׳ או ש׳ נתפסת כמו הצורה הבסיסית', () => {
+    assertCatches('ובכדי לבדוק את זה', 'common/connectives');
+    assertCatches('שבכדי לבדוק את זה', 'common/connectives');
+    assertCatches('ולמרות שאין זמן', 'common/connectives');
+    assertCatches('ומאחר ואין זמן', 'common/conjunctions');
+    assertCatches('והכל היה מוכן', 'common/forms');
+});
+test('צורה תקנית שנראית כשיבוש עם תחילית אינה מסומנת', () => {
+    assertClean('התביעה שכנגד נדחתה.', 'common/connectives');
+    assertClean('ידו על שדיי התמר.', 'common/forms');
+    assertClean('האירוע שהיה ונשכח חזר לכותרות.', 'common/conjunctions');
+});
+test('«אודות» מסומן לבדו ולא אחרי «על»', () => {
+    assertCatches('אודות הספר נכתב רבות.', 'common/connectives');
+    assertClean('על אודות הספר נכתב רבות.', 'common/connectives');
+});
+test('תיקון שמוחק אות שימוש דבוקה אינו מדביק את המילה הבאה', () => {
+    assertFixes('בטרם ושבה הרוח, הכול נרגע.', 'בטרם שבה');
+    assertFixes('במידה ואין זמן, נדחה את הדיון.', 'אם אין זמן');
+    assertFixes('היות ואין לי זמן, נדחה.', 'היות שאין');
+});
+test('צירוף דו־משמעי מדווח ואינו מתקן אוטומטית', () => {
+    const text = 'האירוע היה ולא נרשם.';
+    const fixed = applyFixes(text, check(text).findings, { onlySafe: true }).text;
+    assert.equal(fixed, text, '«היה ו» תוקן אוטומטית אף שהוא דו־משמעי');
+});
+test('שנה עברית מזוהה רק בהקשר של שנה', () => {
+    assertCatches('בשנת תשפה פורסם המאמר.', 'num/hebrew-year-gershayim');
+    for (const ok of ['הטקסט תקין.', 'הגיעו תשעה אנשים.', 'אם תקבל, תשלח לי.', 'תקרה גבוהה.']) {
+        assertClean(ok, 'num/hebrew-year-gershayim');
+    }
+});
+test('פסוקית זמן מזוהה רק בשי״ן ואחריה פועל מוטה', () => {
+    assertCatches('שנגיע לגשר - נעבור אותו.', 'syntax/time-clause-kshe');
+    for (const ok of [
+        'שירותי לשון חינמיים — תיעוד',
+        'שימוש עיקרי: לוודא, ולראות',
+        'שלושה רישומים לגיטימיים, ואין לערבב',
+        'שיטת המחקר, כפי שתוארה',
+        'שנה טובה, ומבורכת',
+    ]) {
+        assertClean(ok, 'syntax/time-clause-kshe');
+    }
+});
+// ── התרעות שקר שנמדדו מול אוצר המילים של האקדמיה ────────────────────────────
+test('מילה תקנית שנראית כמו כתיב חסר עם אות שימוש אינה מסומנת', () => {
+    for (const ok of ['מספור', 'מיפוי', 'כיבוש', 'ביקור', 'שיבוש', 'ויתור',
+        'מאזניים', 'משווק', 'מיקור', 'מתווך', 'דבורים', 'שותק']) {
+        assertClean(ok + ' בטקסט.', 'ktiv/deficient-spelling');
+        assertClean(ok + ' בטקסט.', 'ktiv/vav-not-doubled-after-prefix');
+    }
+});
+test('כתיב חסר אמיתי ממשיך להיות מתוקן, גם עם אות שימוש', () => {
+    assertFixes('בתכנית החדשה', 'בתוכנית');
+    assertFixes('התכנית אושרה', 'התוכנית');
+    assertFixes('בטחון המדינה', 'ביטחון');
+    assertFixes('אין לי נסיון', 'ניסיון');
+    assertFixes('חסרון גדול', 'חיסרון');
+});
+test('הקו המפריד: רווחים בין מילים, בלי רווחים בטווח מספרים', () => {
+    assertFixes('הטיעון—וזה העיקר—מתקיים.', 'הטיעון — וזה העיקר');
+    assertClean('ראו עמ׳ 20–15 בספר.', 'punct/dash-spacing');
+    assertClean('פסקה של 8–15 שורות.', 'punct/dash-spacing');
+});
+test('שם מספר מורכב ושם מספר מיודע אינם מתוקנים לפי הכלל הפשוט', () => {
+    assertClean('פרק באורך שנים עשר עמודים.', 'num/gender-agreement');
+    assertClean('שש עשרה חתולות ישנו.', 'num/gender-agreement');
+    assertClean('השניים הראשונים נבדקו.', 'num/construct-before-definite');
+    assertFixes('חמש העיתונים נבדקו.', 'חמשת העיתונים');
+    assertFixes('חמש עיתונים נבדקו.', 'חמישה עיתונים');
+});
+test('שם מספר מורכב מזוהה גם כשמקף מפריד', () => {
+    assertClean('פרק באורך שנים-עשר עמודים.', 'num/gender-agreement');
+    assertClean('פרק באורך שנים־עשר עמודים.', 'num/gender-agreement');
+});
+test('הקו המפריד אינו מרווח בסוגריים ובטווחים', () => {
+    assertClean('קו מפריד (–) בין חלקי משפט.', 'punct/dash-spacing');
+    assertClean('ראו עמ׳ 20–15.', 'punct/dash-spacing');
+    assertCatches('הטיעון—וזה העיקר—מתקיים.', 'punct/dash-spacing');
+});
+test('יידוע בסמיכות מדווח ואינו מתקן אוטומטית', () => {
+    const text = 'הכלי מסווג כל ממצא.';
+    assertCatches(text, 'course/definite-construct-plural');
+    const fixed = applyFixes(text, check(text).findings, { onlySafe: true }).text;
+    assert.equal(fixed, text, 'צירוף דו־משמעי תוקן אוטומטית');
+});
+test('מונחים לשוניים אינם מסומנים כלשון דיבור או כראשי תיבות לפרישה', () => {
+    assertClean('הכתיב המלא של המילה.', 'academic/colloquial', 'academic');
+    assertCatches('יש מלא אנשים בכיתה.', 'academic/colloquial', 'academic');
+    for (const ok of ['ו״ו החיבור באה כאן.', 'אותיות מש״ה וכל״ב.', 'ראו שמ״א ג, 4.']) {
+        assertClean(ok, 'academic/undefined-acronym', 'academic');
+    }
+    assertCatches('הוגש דוח ממ״ד לוועדה.', 'academic/undefined-acronym', 'academic');
+});
 //# sourceMappingURL=rules.test.js.map

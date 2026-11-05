@@ -45,6 +45,16 @@ function numeralAgreementRule(): Rule {
     severity: 'error' as const,
   };
 
+  /**
+   * האיבר הראשון בשם מספר מורכב (11–19). שתי צורות הכתיב נכללות, שהרי
+   * ״שנים עשר״ בכתיב חסר שכיח בטקסטים, והכלל צריך לזהות גם אותו.
+   */
+  const TEEN_FIRST = new Set([
+    'אחד', 'אחת', 'שניים', 'שנים', 'שתיים', 'שתים', 'שלוש', 'שלושה',
+    'ארבע', 'ארבעה', 'חמש', 'חמישה', 'שש', 'שישה', 'שבע', 'שבעה',
+    'שמונה', 'תשע', 'תשעה',
+  ]);
+
   /** מילים שבאות אחרי שם מספר ואינן שם העצם הנמנה */
   const SKIP_NEXT = new Set([
     'מאות', 'אלפים', 'אלפי', 'מיליון', 'מיליוני', 'מיליארד', 'עשר', 'עשרה',
@@ -62,6 +72,18 @@ function numeralAgreementRule(): Rule {
         const found = numeralOf(tok.text);
         if (!found?.numeral || found.numeral.gender === 'both') continue;
         const { numeral, prefix } = found as { numeral: NonNullable<typeof found.numeral>; prefix: string };
+
+        /*
+         * בשם מספר מורכב (11–19) ההתאם הפוך לכלל הפשוט: לזכר ״שנים עשר
+         * עמודים״, לנקבה ״שש עשרה חתולות״. כאן נבדק האיבר השני, ועליו
+         * הכלל הפשוט אינו חל — אחרת ״שנים עשר עמודים״ היה מתוקן ל״עשרה״.
+         */
+        if (tok.text === 'עשר' || tok.text === 'עשרה') {
+          // גם ״שנים־עשר״ ו״שנים-עשר״, שבהם מקף מפריד ולא רווח
+          const before = ctx.text.slice(0, tok.start).replace(/[\s־-]+$/, '');
+          const prevText = /([א-ת]+)$/.exec(before)?.[1];
+          if (prevText && TEEN_FIRST.has(prevText)) continue;
+        }
 
         const noun = nextWord(ctx.doc, tok);
         if (!noun || noun.kind !== 'hebrew') continue;
@@ -134,6 +156,11 @@ function numeralConstructRule(): Rule {
         if (!found?.numeral) continue;
         const { numeral, prefix } = found as { numeral: NonNullable<typeof found.numeral>; prefix: string };
         if (numeral.state !== 'absolute' || numeral.gender !== 'm' || numeral.value < 2) continue;
+        /*
+         * שם מספר מיודע אינו נכנס לנסמך: ״השניים הראשונים״ תקין, ובלי
+         * הבדיקה הזאת הוא היה מתוקן ל״השני הראשונים״ — ומשנה משמעות.
+         */
+        if (prefix.includes('ה')) continue;
 
         const noun = nextWord(ctx.doc, tok);
         if (!noun || noun.kind !== 'hebrew' || !noun.text.startsWith('ה')) continue;
@@ -298,6 +325,13 @@ export const numberRules: Rule[] = [
       const year = m[0];
       // רק צירופים שנראים כשנה עברית: תש..., תר..., תק...
       if (!/^ת[שרקפעס]/.test(year)) return null;
+      /*
+       * הצורה לבדה אינה מספיקה: ״תקין״, ״תשעה״, ״תקרה״, ״תקבל״ ו״תשלח״
+       * נראות בדיוק כמו שנה עברית. בלי הקשר מפורש — ״בשנת תשפה״,
+       * ״ה׳תשפה״ — הכלל היה מגרש אותן, ו־fix היה הופך אותן לראשי תיבות.
+       */
+      const before = m.input.slice(0, m.index).trimEnd();
+      if (!/(?:שנת|שנה|ה[׳'])$/.test(before)) return null;
       return `בציון שנה עברית באים גרשיים לפני האות האחרונה: «${year.slice(0, -1)}${GERSHAYIM}${year.slice(-1)}».`;
     },
     suggestion: (m) => `${m[0].slice(0, -1)}${GERSHAYIM}${m[0].slice(-1)}`,

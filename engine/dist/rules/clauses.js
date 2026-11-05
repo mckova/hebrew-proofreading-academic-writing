@@ -48,6 +48,7 @@
 import { makeFinding } from '../text/diagnostics.js';
 import { academy } from './helpers.js';
 import { analyzeVerb } from '../morph/analyze.js';
+import { isFinitePastOrFutureForm } from '../lexicon/commonWords.js';
 import { guessNounGender } from '../knowledge/nounGender.js';
 const ZIKA_URL = 'https://hebrew-academy.org.il/' +
     '%d7%a4%d7%a1%d7%95%d7%a7%d7%99%d7%aa-%d7%96%d7%99%d7%a7%d7%94-' +
@@ -212,6 +213,14 @@ function timeClauseRule() {
                     continue;
                 const inner = tok.text.slice(1);
                 if (inner.length < 3)
+                    continue;
+                /*
+                 * ״שימוש״, ״שאלה״, ״שונה״, ״שירותי״, ״שלושה״ אינן שֶׁ־ + פועל אלא
+                 * מילים גמורות שפותחות בשי״ן. הנתח המורפולוגי לבדו מזהה בהן פועל
+                 * (״ימוש״, ״לושה״, ״אלה״), ולכן נדרש שמה שאחרי השי״ן יהיה פועל
+                 * מוטה בעבר או בעתיד — מה שאינו נכון באף אחת מהן.
+                 */
+                if (!isFinitePastOrFutureForm(inner))
                     continue;
                 // הפסוקית חייבת להיפתח בפועל
                 if (analyzeVerb(inner).every((a) => a.accuracy === 'approx'))

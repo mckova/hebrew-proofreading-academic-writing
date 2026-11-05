@@ -94,9 +94,23 @@ export function regexRule(spec) {
     };
 }
 const HEBREW_WORD_BOUNDARY_BEFORE = '(?<![\\u05D0-\\u05EA\\u0591-\\u05C7])';
+const HEBREW_LETTER = /[א-ת]/;
 const HEBREW_WORD_BOUNDARY_AFTER = '(?![\\u05D0-\\u05EA\\u0591-\\u05C7])';
 function escapeRegExp(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+/** האות האחרונה בצירוף היא אות שימוש בודדת, הדבוקה למילה שאחריה */
+function endsWithAttachedAffix(term) {
+    const last = term.trim().split(/\s+/).pop() ?? '';
+    return last.length === 1 && 'ושהכלבמ'.includes(last);
+}
+/** האם המילה שקדמה למיקום היא word */
+function precededByWord(text, start, word) {
+    const before = text.slice(0, start).trimEnd();
+    if (!before.endsWith(word))
+        return false;
+    const charBefore = before[before.length - word.length - 1];
+    return charBefore === undefined || !HEBREW_LETTER.test(charBefore);
 }
 /**
  * בונה תבנית שמתאימה לצירוף שלם בלבד — לא כחלק ממילה ארוכה יותר.
@@ -147,6 +161,12 @@ export function termRule(spec) {
                 if (!entry)
                     continue;
                 const start = m.index + m[0].indexOf(matched);
+                // ״שכנגד״ ו״שדיי״ תקינות, אף ש״כנגד״ ו״דיי״ אינן
+                if (entry.noPrefix && HEBREW_LETTER.test(m[0].slice(0, m[0].indexOf(matched))))
+                    continue;
+                // ״על אודות״ תקין, אף ש״אודות״ לבדו אינו
+                if (entry.okAfter && precededByWord(ctx.text, start, entry.okAfter))
+                    continue;
                 const message = spec.message?.(entry, matched) ??
                     `במקום «${entry.avoid}» עדיף «${entry.prefer}»${entry.note ? ` — ${entry.note}` : ''}.`;
                 findings.push(makeFinding(ctx, spec, {
@@ -155,7 +175,15 @@ export function termRule(spec) {
                     severity: entry.severity ?? spec.severity,
                     message,
                     suggestion: entry.prefer,
-                    replacement: entry.manual ? undefined : entry.prefer,
+                    /*
+                   * ״בטרם ו״ ← ״בטרם״ מוחק ו״ו שדבוקה למילה הבאה, ובלי רווח
+                   * התיקון מדביק שתי מילים: ״בטרםשבה״. נוסף רווח במקום האות.
+                   */
+                    replacement: entry.manual
+                        ? undefined
+                        : endsWithAttachedAffix(entry.avoid) && !endsWithAttachedAffix(entry.prefer)
+                            ? entry.prefer + ' '
+                            : entry.prefer,
                     autoFixSafe: !entry.manual,
                     authority: typeof spec.authority === 'function' ? spec.authority(entry) : spec.authority,
                 }));

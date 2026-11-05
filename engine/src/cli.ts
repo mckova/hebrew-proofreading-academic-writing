@@ -107,7 +107,25 @@ function main(): void {
     return;
   }
 
-  const text = args.file ? readFileSync(args.file, 'utf8') : args.text;
+  let text: string | undefined;
+  if (args.file) {
+    try {
+      text = readFileSync(args.file, 'utf8');
+    } catch {
+      // קובץ חסר או בלתי קריא — הודעה במקום עקבת שגיאה של Node
+      process.stderr.write(`[hebrew-editor] לא הצלחתי לקרוא את הקובץ: ${args.file}
+`);
+      process.exitCode = 1;
+      return;
+    }
+    if (!text.trim()) {
+      process.stderr.write(`[hebrew-editor] הקובץ ריק: ${args.file}
+`);
+      return;
+    }
+  } else {
+    text = args.text;
+  }
   if (!text) {
     console.log(USAGE);
     process.exitCode = 1;

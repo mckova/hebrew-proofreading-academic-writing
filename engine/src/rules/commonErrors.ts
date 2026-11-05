@@ -34,7 +34,7 @@ const CONJUNCTION_ERRORS: TermEntry[] = [
   { avoid: 'למרות ו', prefer: 'למרות ש' },
   { avoid: 'בזמן ו', prefer: 'בזמן ש' },
   { avoid: 'במידה ו', prefer: 'אם', note: '״במידה ש״ מציין מידה; לתנאי משמשת המילה ״אם״' },
-  { avoid: 'היה ו', prefer: 'אם', note: 'ניסוח משפטי מיושן; בעברית תקנית ״אם״' },
+  { avoid: 'היה ו', prefer: 'אם', note: 'ניסוח משפטי מיושן; בעברית תקנית ״אם״', manual: true, noPrefix: true },
   { avoid: 'באם', prefer: 'אם', note: 'צירוף שאינו תקני' },
   { avoid: 'כמעט ולא', prefer: 'כמעט לא', note: 'הו״ו מיותרת' },
   { avoid: 'כמעט ואין', prefer: 'כמעט אין', note: 'הו״ו מיותרת' },
@@ -47,12 +47,12 @@ const CONNECTIVES: TermEntry[] = [
   { avoid: 'בנוסף ל', prefer: 'נוסף על', severity: 'suggestion', manual: true },
   { avoid: 'בנוסף לכך', prefer: 'נוסף על כך', severity: 'suggestion', manual: true },
   { avoid: 'בנוסף', prefer: 'נוסף על כך', severity: 'suggestion', manual: true },
-  { avoid: 'אודות', prefer: 'על אודות', note: '״אודות״ אינה עומדת בפני עצמה', manual: true },
+  { avoid: 'אודות', prefer: 'על אודות', note: '״אודות״ אינה עומדת בפני עצמה', manual: true, okAfter: 'על' },
   { avoid: 'בגלל ש', prefer: 'מפני ש', note: '״בגלל״ באה לפני שם עצם, לא לפני פסוקית' },
   { avoid: 'בגלל זה', prefer: 'משום כך', severity: 'suggestion' },
   { avoid: 'למרות ש', prefer: 'אף על פי ש', note: '״למרות״ באה לפני שם עצם', severity: 'suggestion', manual: true },
   { avoid: 'לאור', prefer: 'לנוכח', note: 'תרגום שאילה; ״לנוכח״ או ״בעקבות״ מדויקות יותר', severity: 'suggestion', manual: true },
-  { avoid: 'כנגד', prefer: 'נגד', note: '״כנגד״ פירושה מול, לעומת', severity: 'suggestion', manual: true },
+  { avoid: 'כנגד', prefer: 'נגד', note: '״כנגד״ פירושה מול, לעומת', severity: 'suggestion', manual: true, noPrefix: true },
   { avoid: 'כמו גם', prefer: 'וכן', note: 'תרגום שאילה מאנגלית', severity: 'suggestion', manual: true },
   { avoid: 'מאידך', prefer: 'מנגד', note: 'הצורה המלאה היא ״מאידך גיסא״', severity: 'suggestion', manual: true },
   { avoid: 'מחד', prefer: 'מצד אחד', note: 'הצורה המלאה היא ״מחד גיסא״', severity: 'suggestion', manual: true },
@@ -100,7 +100,7 @@ const FORM_ERRORS: TermEntry[] = [
   { avoid: 'כל שהם', prefer: 'כלשהם' },
   { avoid: 'יותר מידי', prefer: 'יותר מדי', note: '״מדי״ בדל״ת אחת' },
   { avoid: 'מיותר מידי', prefer: 'יותר מדי' },
-  { avoid: 'דיי', prefer: 'די' },
+  { avoid: 'דיי', prefer: 'די', noPrefix: true },
   { avoid: 'בעיקרון', prefer: 'עקרונית', note: 'שיבוש נפוץ של ״עקרונית״ או ״ביסודו של דבר״', severity: 'suggestion', manual: true },
   { avoid: 'לפחות ולא יותר', prefer: 'לכל היותר', manual: true },
 ];
@@ -127,6 +127,7 @@ export const commonErrorRules: Rule[] = [
     title: 'מילית שעבוד עם ו״ו במקום שי״ן',
     authority: academy('מילות השעבוד — ״היות ש״, ״מאחר ש״, ״מכיוון ש״'),
     entries: CONJUNCTION_ERRORS,
+    allowPrefixes: true,
   }),
 
   termRule({
@@ -136,6 +137,7 @@ export const commonErrorRules: Rule[] = [
     title: 'מילות קישור ומילות יחס',
     authority: academy('שימושי לשון — מילות קישור'),
     entries: CONNECTIVES,
+    allowPrefixes: true,
   }),
 
   termRule({
@@ -163,6 +165,7 @@ export const commonErrorRules: Rule[] = [
     title: 'צורות כתיב שאינן תקניות',
     authority: academy('כללי הכתיב ושימושי לשון'),
     entries: FORM_ERRORS,
+    allowPrefixes: true,
   }),
 
   termRule({
